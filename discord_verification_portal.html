@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Verificação Discord</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Orbitron -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        discord: '#5865F2',
+                        discordHover: '#4752C4',
+                        neonAccent: '#00ffcc',
+                        darkBg: '#0b0e14',
+                        cardBg: 'rgba(18, 24, 38, 0.85)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0b0e14;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(88, 101, 242, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(0, 255, 204, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glow-neon {
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.25);
+        }
+
+        .glow-discord {
+            box-shadow: 0 0 25px rgba(88, 101, 242, 0.3);
+        }
+
+        /* Success Animation */
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: #00ffcc;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Glassmorphism blur */
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col justify-between items-center p-4 antialiased">
+
+    <!-- Header Grid background accents -->
+    <div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-lg my-auto relative z-10">
+        
+        <!-- Header Card -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-discord/20 border border-discord/40 mb-3 text-discord glow-discord">
+                <i class="fa-solid fa-shield-halved text-3xl"></i>
+            </div>
+            <h1 class="font-display text-2xl md:text-3xl font-bold tracking-wider text-white">
+                VERIFICAÇÃO <span class="text-neonAccent">DISCORD</span>
+            </h1>
+            <p class="text-xs text-gray-400 mt-1">Conclua as etapas abaixo para ter acesso ao servidor</p>
+        </div>
+
+        <!-- Interactive Form Card -->
+        <div class="glass-panel cardBg rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+            
+            <!-- Step Indicators -->
+            <div class="flex items-center justify-between mb-8 relative">
+                <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-700 -translate-y-1/2 z-0"></div>
+                <div id="step-bar" class="absolute top-1/2 left-0 h-0.5 bg-neonAccent -translate-y-1/2 z-0 transition-all duration-300 w-1/2"></div>
+
+                <!-- Step 1 Badge -->
+                <div class="relative z-10 flex flex-col items-center">
+                    <div id="badge-1" class="w-9 h-9 rounded-full bg-neonAccent text-darkBg font-bold flex items-center justify-center text-sm shadow-md transition-all">
+                        1
+                    </div>
+                    <span class="text-[10px] uppercase tracking-wider font-semibold mt-1 text-neonAccent">Utilizador</span>
+                </div>
+
+                <!-- Step 2 Badge -->
+                <div class="relative z-10 flex flex-col items-center">
+                    <div id="badge-2" class="w-9 h-9 rounded-full bg-gray-800 text-gray-400 border border-gray-700 font-bold flex items-center justify-center text-sm shadow-md transition-all">
+                        2
+                    </div>
+                    <span class="text-[10px] uppercase tracking-wider font-semibold mt-1 text-gray-400">Captcha</span>
+                </div>
+
+                <!-- Step 3 Badge -->
+                <div class="relative z-10 flex flex-col items-center">
+                    <div id="badge-3" class="w-9 h-9 rounded-full bg-gray-800 text-gray-400 border border-gray-700 font-bold flex items-center justify-center text-sm shadow-md transition-all">
+                        3
+                    </div>
+                    <span class="text-[10px] uppercase tracking-wider font-semibold mt-1 text-gray-400">Confirmar</span>
+                </div>
+            </div>
+
+            <!-- FORM STEPS -->
+            <form id="verifyForm" onsubmit="handleFormSubmit(event)">
+                
+                <!-- STEP 1: USERNAME -->
+                <div id="step-1-container" class="space-y-4">
+                    <label class="block text-sm font-medium text-gray-300">
+                        Qual é o teu nome de utilizador no Discord?
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-discord text-lg">
+                            <i class="fa-brands fa-discord"></i>
+                        </span>
+                        <input type="text" id="username" required
+                            class="w-full pl-10 pr-4 py-3 bg-gray-900/90 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neonAccent focus:ring-1 focus:ring-neonAccent transition-all text-sm" 
+                            placeholder="exemplo: utilizador123">
+                    </div>
+                    <p class="text-xs text-gray-400">Certifica-te de inserir o nome exatamente igual ao do teu perfil do Discord.</p>
+                    
+                    <button type="button" onclick="goToStep(2)" 
+                        class="w-full py-3 bg-discord hover:bg-discordHover text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm mt-4">
+                        Avançar <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- STEP 2: CAPTCHA / PIN CODE -->
+                <div id="step-2-container" class="space-y-4 hidden">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-sm font-medium text-gray-300">
+                            Resolve o teste de verificação humana:
+                        </label>
+                        <button type="button" onclick="generateCaptcha()" class="text-xs text-neonAccent hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-right"></i> Novo Código
+                        </button>
+                    </div>
+
+                    <!-- Visual Math Captcha Box -->
+                    <div class="p-4 bg-gray-900/90 border border-gray-800 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-neonAccent font-display font-bold text-lg tracking-widest select-none" id="captchaQuestion">
+                                5 + 3 = ?
+                            </span>
+                        </div>
+                        <input type="number" id="captchaInput" required
+                            class="w-24 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-center text-white text-lg font-bold focus:outline-none focus:border-neonAccent"
+                            placeholder="Resultado">
+                    </div>
+
+                    <!-- Alternate Option: PIN Verification -->
+                    <div class="pt-2">
+                        <p class="text-xs text-gray-400 mb-2">Ou digita o teu PIN de 6 dígitos recebido por mensagem:</p>
+                        <input type="text" id="pinInput" maxlength="6"
+                            class="w-full px-4 py-2.5 bg-gray-900/90 border border-gray-700 rounded-xl text-center text-white tracking-widest font-mono text-base focus:outline-none focus:border-neonAccent placeholder-gray-600"
+                            placeholder="0 0 0 0 0 0">
+                    </div>
+
+                    <div class="flex gap-3 mt-4">
+                        <button type="button" onclick="goToStep(1)" 
+                            class="w-1/3 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-xl transition-all text-sm">
+                            Voltar
+                        </button>
+                        <button type="button" onclick="goToStep(3)" 
+                            class="w-2/3 py-3 bg-discord hover:bg-discordHover text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
+                            Validar <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: CONFIRMATION -->
+                <div id="step-3-container" class="space-y-4 hidden">
+                    <div class="p-4 bg-gray-900/90 border border-gray-800 rounded-xl text-sm space-y-2">
+                        <div class="flex justify-between text-gray-400">
+                            <span>Utilizador:</span>
+                            <span id="summary-username" class="text-white font-semibold">--</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400">
+                            <span>Estado de Segurança:</span>
+                            <span class="text-neonAccent font-medium flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check text-xs"></i> Humano Confirmado
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-4">
+                        <button type="button" onclick="goToStep(2)" 
+                            class="w-1/3 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-xl transition-all text-sm">
+                            Voltar
+                        </button>
+                        <button type="submit" id="verifyBtn"
+                            class="w-2/3 py-3 bg-neonAccent hover:bg-emerald-400 text-darkBg font-bold rounded-xl shadow-lg glow-neon transition-all flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-shield-check"></i> Verificar Conta
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <!-- SUCCESS MODAL OVERLAY -->
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden transition-all duration-300">
+        <div class="glass-panel cardBg border border-neonAccent/30 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative transform scale-95 transition-all">
+            
+            <!-- Animated SVG Checkmark -->
+            <div class="w-20 h-20 mx-auto mb-4">
+                <svg class="w-full h-full" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle" cx="26" cy="26" r="23"/>
+                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+
+            <h3 class="font-display text-2xl font-bold text-white mb-2">VERIFICADO!</h3>
+            <p class="text-sm text-gray-300 mb-6">
+                A tua conta foi validada com sucesso. Já podes regressar ao Discord e aceder a todos os canais.
+            </p>
+
+            <button onclick="closeModal()" 
+                class="w-full py-3 bg-discord hover:bg-discordHover text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
+                <i class="fa-brands fa-discord text-base"></i> Voltar ao Discord
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-gray-500 py-4 relative z-10">
+        &copy; Sistema de Verificação Anti-Bot • Protegido por encriptação
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let currentStep = 1;
+        let num1 = 0;
+        let num2 = 0;
+        let captchaResult = 0;
+
+        // Generate Math Captcha on Load
+        function generateCaptcha() {
+            num1 = Math.floor(Math.random() * 10) + 1;
+            num2 = Math.floor(Math.random() * 10) + 1;
+            captchaResult = num1 + num2;
+            document.getElementById('captchaQuestion').innerText = `${num1} + ${num2} = ?`;
+            document.getElementById('captchaInput').value = '';
+        }
+
+        // Navigation between Steps
+        function goToStep(step) {
+            const usernameInput = document.getElementById('username').value.trim();
+
+            if (step === 2 && !usernameInput) {
+                alert('Por favor, introduz o teu nome de utilizador do Discord.');
+                return;
+            }
+
+            if (step === 3 && currentStep === 2) {
+                const userCaptcha = parseInt(document.getElementById('captchaInput').value);
+                const userPin = document.getElementById('pinInput').value.trim();
+
+                // Validate Captcha or 6-digit PIN
+                if (userCaptcha !== captchaResult && userPin.length !== 6) {
+                    alert('Resposta de Captcha errada ou PIN inválido. Tenta novamente.');
+                    return;
+                }
+
+                // Update summary text
+                document.getElementById('summary-username').innerText = usernameInput;
+            }
+
+            currentStep = step;
+            updateStepUI();
+        }
+
+        // Update UI visuals based on active step
+        function updateStepUI() {
+            // Hide all containers
+            document.getElementById('step-1-container').classList.add('hidden');
+            document.getElementById('step-2-container').classList.add('hidden');
+            document.getElementById('step-3-container').classList.add('hidden');
+
+            // Show active step container
+            document.getElementById(`step-${currentStep}-container`).classList.remove('hidden');
+
+            // Update step bar width
+            const stepBar = document.getElementById('step-bar');
+            if (currentStep === 1) stepBar.style.width = '15%';
+            if (currentStep === 2) stepBar.style.width = '50%';
+            if (currentStep === 3) stepBar.style.width = '100%';
+
+            // Update step badge styles
+            for (let i = 1; i <= 3; i++) {
+                const badge = document.getElementById(`badge-${i}`);
+                if (i <= currentStep) {
+                    badge.className = "w-9 h-9 rounded-full bg-neonAccent text-darkBg font-bold flex items-center justify-center text-sm shadow-md transition-all";
+                } else {
+                    badge.className = "w-9 h-9 rounded-full bg-gray-800 text-gray-400 border border-gray-700 font-bold flex items-center justify-center text-sm shadow-md transition-all";
+                }
+            }
+        }
+
+        // Handle Form Submission
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('verifyBtn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> A Processar...`;
+            btn.disabled = true;
+
+            // Simulate server verification delay
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-solid fa-shield-check"></i> Verificar Conta`;
+                btn.disabled = false;
+                
+                // Show Success Modal
+                const modal = document.getElementById('successModal');
+                modal.classList.remove('hidden');
+            }, 1200);
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            // Reset Form to Step 1
+            document.getElementById('verifyForm').reset();
+            currentStep = 1;
+            updateStepUI();
+            generateCaptcha();
+        }
+
+        // Initialize Captcha on page load
+        window.onload = function() {
+            generateCaptcha();
+        };
+    </script>
+</body>
+</html>
